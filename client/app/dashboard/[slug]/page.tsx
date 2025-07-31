@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Bar, Pie, Line } from "react-chartjs-2";
 import Navigation from "../../components/Navigation";
+import { useTheme } from "../../context/ThemeContext";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -53,9 +54,23 @@ interface Response {
 export default function DashboardPage() {
   const { slug } = useParams();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  // Handle theme safely after mounting
+  let isDark = false;
+  try {
+    const themeContext = useTheme();
+    isDark = themeContext.isDark;
+  } catch (error) {
+    // Theme context not available yet during hydration
+  }
   const [form, setForm] = useState<FormData | null>(null);
   const [responses, setResponses] = useState<Response[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Mock real-time updates
   useEffect(() => {

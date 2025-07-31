@@ -2,6 +2,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { FormProvider } from "./context/FormContext";
+import { ThemeProvider } from "./context/ThemeContext";
 
 export const metadata: Metadata = {
   title: "Custom Form Builder",
@@ -14,11 +15,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="bg-gray-100 text-gray-900">
-        <FormProvider>
-          <div className="min-h-screen">{children}</div>
-        </FormProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-300">
+        <ThemeProvider>
+          <FormProvider>
+            <div className="min-h-screen">{children}</div>
+          </FormProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

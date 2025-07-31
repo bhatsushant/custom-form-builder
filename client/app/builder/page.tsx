@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Navigation from "../components/Navigation";
+import { useTheme } from "../context/ThemeContext";
 
 interface FormField {
   id: string;
@@ -26,6 +27,16 @@ interface FormData {
 
 export default function FormBuilder() {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  // Handle theme safely after mounting
+  let isDark = false;
+  try {
+    const themeContext = useTheme();
+    isDark = themeContext.isDark;
+  } catch (error) {
+    // Theme context not available yet during hydration
+  }
   const [formData, setFormData] = useState<FormData>({
     title: "",
     description: "",
@@ -36,6 +47,10 @@ export default function FormBuilder() {
   const [showPreview, setShowPreview] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const fieldIdCounter = useRef(0);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fieldTypes = [
     { type: "text", label: "Text Input", icon: "📝" },
@@ -128,26 +143,26 @@ export default function FormBuilder() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <Navigation
         customTitle="Form Builder"
         rightActions={
           <div className="flex gap-4">
             <button
               onClick={saveDraft}
-              className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+              className="px-4 py-2 bg-gray-600 dark:bg-gray-500 text-white rounded hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
             >
               Save Draft
             </button>
             <button
               onClick={() => setShowPreview(!showPreview)}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+              className="px-4 py-2 bg-green-600 dark:bg-green-500 text-white rounded hover:bg-green-700 dark:hover:bg-green-600 transition-colors"
             >
               {showPreview ? "Edit" : "Preview"}
             </button>
             <button
               onClick={saveForm}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
             >
               Save Form
             </button>
@@ -160,14 +175,16 @@ export default function FormBuilder() {
         ) : (
           <div className="grid grid-cols-12 gap-6">
             {/* Field Types Panel */}
-            <div className="col-span-3 bg-white rounded-lg shadow p-4">
-              <h2 className="text-lg font-semibold mb-4">Field Types</h2>
+            <div className="col-span-3 bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700 p-4 transition-colors duration-300">
+              <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+                Field Types
+              </h2>
               <div className="space-y-2">
                 {fieldTypes.map(({ type, label, icon }) => (
                   <button
                     key={type}
                     onClick={() => addField(type as FormField["type"])}
-                    className="w-full p-3 text-left border rounded hover:bg-gray-50 flex items-center gap-2"
+                    className="w-full p-3 text-left border border-gray-200 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 text-gray-900 dark:text-white transition-colors"
                   >
                     <span>{icon}</span>
                     <span>{label}</span>
@@ -177,7 +194,7 @@ export default function FormBuilder() {
             </div>
 
             {/* Form Builder */}
-            <div className="col-span-6 bg-white rounded-lg shadow p-6">
+            <div className="col-span-6 bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700 p-6 transition-colors duration-300">
               <div className="space-y-4 mb-6">
                 <input
                   type="text"
@@ -186,7 +203,7 @@ export default function FormBuilder() {
                   onChange={e =>
                     setFormData(prev => ({ ...prev, title: e.target.value }))
                   }
-                  className="w-full text-2xl font-bold border-none outline-none"
+                  className="w-full text-2xl font-bold border-none outline-none bg-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                 />
                 <input
                   type="text"
@@ -198,7 +215,7 @@ export default function FormBuilder() {
                       slug: e.target.value.toLowerCase().replace(/\s+/g, "-")
                     }))
                   }
-                  className="w-full p-2 border rounded"
+                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-400"
                 />
                 <textarea
                   placeholder="Form Description"
@@ -209,7 +226,7 @@ export default function FormBuilder() {
                       description: e.target.value
                     }))
                   }
-                  className="w-full p-2 border rounded"
+                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-400"
                   rows={3}
                 />
               </div>
@@ -224,14 +241,16 @@ export default function FormBuilder() {
                     onDrop={e => handleDrop(e, index)}
                     className={`p-4 border rounded cursor-move ${
                       editingField === field.id
-                        ? "border-blue-500"
-                        : "border-gray-200"
-                    } hover:shadow-md transition-shadow`}
+                        ? "border-blue-500 dark:border-blue-400"
+                        : "border-gray-200 dark:border-gray-600"
+                    } hover:shadow-md dark:hover:shadow-gray-700 transition-all duration-300 bg-gray-50 dark:bg-gray-750`}
                   >
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex items-center gap-2">
-                        <div className="cursor-move text-gray-400">⋮⋮</div>
-                        <span className="text-sm text-gray-500">
+                        <div className="cursor-move text-gray-400 dark:text-gray-500">
+                          ⋮⋮
+                        </div>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
                           {field.type.charAt(0).toUpperCase() +
                             field.type.slice(1)}
                         </span>
@@ -243,13 +262,13 @@ export default function FormBuilder() {
                               editingField === field.id ? null : field.id
                             )
                           }
-                          className="text-blue-600 hover:text-blue-800"
+                          className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
                         >
                           ✏️
                         </button>
                         <button
                           onClick={() => deleteField(field.id)}
-                          className="text-red-600 hover:text-red-800"
+                          className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
                         >
                           🗑️
                         </button>
@@ -279,16 +298,18 @@ export default function FormBuilder() {
             </div>
 
             {/* Properties Panel */}
-            <div className="col-span-3 bg-white rounded-lg shadow p-4">
-              <h2 className="text-lg font-semibold mb-4">Form Properties</h2>
+            <div className="col-span-3 bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700 p-4 transition-colors duration-300">
+              <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+                Form Properties
+              </h2>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">
+                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
                     Fields: {formData.fields.length}
                   </label>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">
+                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
                     Required Fields:{" "}
                     {formData.fields.filter(f => f.required).length}
                   </label>

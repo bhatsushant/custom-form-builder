@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Navigation from "../../components/Navigation";
+import { useTheme } from "../../context/ThemeContext";
 
 interface FormField {
   id: string;
@@ -31,11 +32,25 @@ interface FormResponse {
 export default function FormPage() {
   const { slug } = useParams();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+
+  // Handle theme safely after mounting
+  let isDark = false;
+  try {
+    const themeContext = useTheme();
+    isDark = themeContext.isDark;
+  } catch (error) {
+    // Theme context not available yet during hydration
+  }
   const [form, setForm] = useState<FormData | null>(null);
   const [responses, setResponses] = useState<FormResponse>({});
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!slug) return;
@@ -150,12 +165,14 @@ export default function FormPage() {
 
   if (!form) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <Navigation customTitle="Form Not Found" />
         <div className="flex items-center justify-center pt-20">
           <div className="text-center">
-            <p className="text-xl text-gray-600 mb-4">Form not found</p>
-            <p className="text-gray-500 mb-6">
+            <p className="text-xl text-gray-600 dark:text-gray-300 mb-4">
+              Form not found
+            </p>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">
               The form you're looking for doesn't exist or has been removed.
             </p>
           </div>
@@ -166,7 +183,7 @@ export default function FormPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <Navigation customTitle="Form Submitted" />
         <div className="flex items-center justify-center pt-20">
           <div className="max-w-md mx-auto text-center bg-white p-8 rounded-lg shadow">
