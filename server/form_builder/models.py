@@ -1,37 +1,84 @@
 # form_builder/models.py
-from django.db import models
-import uuid
-from datetime import datetime
+"""
+MongoDB-only models using the mongodb_service
+This file maintains Django's expected structure but delegates to MongoDB
+"""
 
-class FormField(models.Model):
-    field_id = models.CharField(max_length=100)
-    field_type = models.CharField(max_length=50)
-    label = models.CharField(max_length=255)
-    required = models.BooleanField(default=False)
-    options = models.JSONField(default=list, blank=True)
-    validation = models.JSONField(default=dict, blank=True)
+class Form:
+    """MongoDB Form model interface"""
     
-    class Meta:
-        abstract = True
+    @staticmethod
+    def objects():
+        from mongodb_service import mongodb_service
+        return FormManager(mongodb_service)
 
-class Form(models.Model):
-    title = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
-    fields = models.JSONField(default=list)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+class FormResponse:
+    """MongoDB FormResponse model interface"""
     
-    def __str__(self):
-        return self.title
+    @staticmethod
+    def objects():
+        from mongodb_service import mongodb_service
+        return FormResponseManager(mongodb_service)
 
-class FormResponse(models.Model):
-    form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name='responses')
-    responses = models.JSONField(default=dict)
-    submitted_at = models.DateTimeField(auto_now_add=True)
-    ip_address = models.GenericIPAddressField(null=True, blank=True)
+class FormManager:
+    """Manager for Form operations in MongoDB"""
     
-    class Meta:
-        indexes = [
-            models.Index(fields=['form']),
-            models.Index(fields=['submitted_at']),
-        ]
+    def __init__(self, mongodb_service):
+        self.mongodb_service = mongodb_service
+    
+    def all(self):
+        return self.mongodb_service.get_all_forms()
+    
+    def get(self, **kwargs):
+        if 'pk' in kwargs:
+            return self.mongodb_service.get_form(kwargs['pk'])
+        elif '_id' in kwargs:
+            return self.mongodb_service.get_form(kwargs['_id'])
+        elif 'id' in kwargs:
+            return self.mongodb_service.get_form(kwargs['id'])
+        return None
+    
+    def create(self, **kwargs):
+        form_id = self.mongodb_service.create_form(
+            title=kwargs.get('title'),
+            description=kwargs.get('description'),
+            fields=kwargs.get('fields', [])
+        )
+        return self.mongodb_service.get_form(form_id)
+    
+    def filter(self, **kwargs):
+        # For compatibility, return all forms for now
+        return self.all()
+    
+    def count(self):
+        return len(self.all())
+
+class FormResponseManager:
+    """Manager for FormResponse operations in MongoDB"""
+    
+    def __init__(self, mongodb_service):
+        self.mongodb_service = mongodb_service
+    
+    def filter(self, **kwargs):
+        if 'form_id' in kwargs:
+            return self.mongodb_service.get_form_responses(kwargs['form_id'])
+        return []
+    
+    def create(self, **kwargs):
+        response_id = self.mongodb_service.create_response(
+            form_id=kwargs.get('form_id'),
+            responses=kwargs.get('responses', {}),
+            ip_address=kwargs.get('ip_address')
+        )
+        return {'id': response_id}
+    
+    def count(self):
+        # Get total count across all forms
+        all_forms = self.mongodb_service.get_all_forms()
+        total = 0
+        for form in all_forms:
+            total += len(self.mongodb_service.get_form_responses(form['id']))
+        return total
+    
+    def order_by(self, field):
+        return self  # For compatibility
