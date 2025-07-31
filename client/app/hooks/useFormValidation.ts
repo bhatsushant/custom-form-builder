@@ -1,14 +1,34 @@
-// hooks/useFormValidation.ts
 import { useState, useCallback } from "react";
-import { FormField } from "../components/FormBuilder/FormBuilder";
+
+interface FormField {
+  id: string;
+  type: "text" | "multiple-choice" | "checkbox" | "rating";
+  label: string;
+  options?: string[];
+  required?: boolean;
+  validation?: {
+    minLength?: number;
+    maxLength?: number;
+    pattern?: string;
+  };
+}
+
+interface FormResponse {
+  [fieldId: string]: any;
+}
+
+interface FormErrors {
+  [fieldId: string]: string;
+}
 
 interface ValidationResult {
   isValid: boolean;
   errors: Record<string, string>;
 }
 
-export const useFormValidation = (fields: FormField[]) => {
-  const [errors, setErrors] = useState<Record<string, string>>({});
+export function useFormValidation(fields: FormField[]) {
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
 
   const validateField = useCallback(
     (field: FormField, value: any): string | null => {
@@ -16,22 +36,27 @@ export const useFormValidation = (fields: FormField[]) => {
         field.required &&
         (!value || (Array.isArray(value) && value.length === 0))
       ) {
-        return "This field is required";
+        return `${field.label} is required`;
       }
 
       if (field.type === "text" && field.validation && value) {
-        const { minLength, maxLength, pattern } = field.validation;
-
-        if (minLength && value.length < minLength) {
-          return `Minimum length is ${minLength} characters`;
+        if (
+          field.validation.minLength &&
+          value.length < field.validation.minLength
+        ) {
+          return `${field.label} must be at least ${field.validation.minLength} characters`;
         }
-
-        if (maxLength && value.length > maxLength) {
-          return `Maximum length is ${maxLength} characters`;
+        if (
+          field.validation.maxLength &&
+          value.length > field.validation.maxLength
+        ) {
+          return `${field.label} must be no more than ${field.validation.maxLength} characters`;
         }
-
-        if (pattern && !new RegExp(pattern).test(value)) {
-          return "Invalid format";
+        if (
+          field.validation.pattern &&
+          !new RegExp(field.validation.pattern).test(value)
+        ) {
+          return `${field.label} format is invalid`;
         }
       }
 
@@ -42,22 +67,40 @@ export const useFormValidation = (fields: FormField[]) => {
 
   const validateForm = useCallback(
     (responses: Record<string, any>): ValidationResult => {
-      const newErrors: Record<string, string> = {};
+      const newErrors: FormErrors = {};
+      let isValid = true;
 
       fields.forEach(field => {
         const error = validateField(field, responses[field.id]);
         if (error) {
           newErrors[field.id] = error;
+          isValid = false;
         }
       });
 
       setErrors(newErrors);
       return {
-        isValid: Object.keys(newErrors).length === 0,
+        isValid,
         errors: newErrors
       };
     },
     [fields, validateField]
+  );
+
+  const updateField = useCallback(
+    (fieldId: string, value: any) => {
+      setTouched(prev => ({ ...prev, [fieldId]: true }));
+
+      // Clear error when user starts typing
+      if (errors[fieldId]) {
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[fieldId];
+          return newErrors;
+        });
+      }
+    },
+    [errors]
   );
 
   const clearFieldError = useCallback((fieldId: string) => {
@@ -68,10 +111,21 @@ export const useFormValidation = (fields: FormField[]) => {
     });
   }, []);
 
+  const resetForm = useCallback(() => {
+    setErrors({});
+    setTouched({});
+  }, []);
+
   return {
     errors,
+    touched,
     validateField,
     validateForm,
-    clearFieldError
+    updateField,
+    clearFieldError,
+    resetForm,
+    isFieldValid: (fieldId: string) => !errors[fieldId] && touched[fieldId],
+    getFieldError: (fieldId: string) => errors[fieldId],
+    hasErrors: Object.keys(errors).length > 0
   };
-};
+}

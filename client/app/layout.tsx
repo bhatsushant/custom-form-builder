@@ -1,6 +1,7 @@
 // app/layout.tsx
 import "./globals.css";
 import type { Metadata } from "next";
+import { FormProvider } from "./context/FormContext";
 
 export const metadata: Metadata = {
   title: "Custom Form Builder",
@@ -15,7 +16,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-gray-100 text-gray-900">
-        <div className="min-h-screen">{children}</div>
+        <FormProvider>
+          <div className="min-h-screen">{children}</div>
+        </FormProvider>
       </body>
     </html>
   );

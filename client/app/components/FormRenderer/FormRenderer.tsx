@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 
-interface Field {
+type Field = {
   id: string;
   type: "text" | "multiple-choice" | "checkbox" | "rating";
   label: string;
@@ -14,7 +14,7 @@ interface Field {
     maxLength?: number;
     pattern?: string;
   };
-}
+};
 
 interface Props {
   fields: Field[];
@@ -25,46 +25,41 @@ export default function FormRenderer({ fields, onSubmit }: Props) {
   const [formState, setFormState] = useState<Record<string, any>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleChange = (id: string, value: any) => {
+  const updateField = (id: string, value: any) => {
     setFormState(prev => ({ ...prev, [id]: value }));
   };
 
-  const handleCheckboxChange = (id: string, value: string) => {
-    setFormState(prev => {
-      const prevVal = prev[id] || [];
-      const newVal = prevVal.includes(value)
-        ? prevVal.filter((v: string) => v !== value)
-        : [...prevVal, value];
-      return { ...prev, [id]: newVal };
-    });
+  const toggleCheckbox = (id: string, value: string) => {
+    const prev = formState[id] || [];
+    const updated = prev.includes(value)
+      ? prev.filter((v: string) => v !== value)
+      : [...prev, value];
+    updateField(id, updated);
   };
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-    fields.forEach(field => {
-      const val = formState[field.id];
 
+    fields.forEach(field => {
+      const value = formState[field.id];
       if (field.required) {
         if (
-          val === undefined ||
-          val === "" ||
-          (Array.isArray(val) && val.length === 0)
+          value === undefined ||
+          value === "" ||
+          (Array.isArray(value) && value.length === 0)
         ) {
           newErrors[field.id] = "This field is required.";
         }
       }
 
-      if (field.type === "text" && typeof val === "string") {
+      if (field.type === "text" && typeof value === "string") {
         const { minLength, maxLength, pattern } = field.validation || {};
-        if (minLength && val.length < minLength) {
+        if (minLength && value.length < minLength)
           newErrors[field.id] = `Minimum length is ${minLength}`;
-        }
-        if (maxLength && val.length > maxLength) {
+        if (maxLength && value.length > maxLength)
           newErrors[field.id] = `Maximum length is ${maxLength}`;
-        }
-        if (pattern && !new RegExp(pattern).test(val)) {
-          newErrors[field.id] = `Invalid format`;
-        }
+        if (pattern && !new RegExp(pattern).test(value))
+          newErrors[field.id] = "Invalid format";
       }
     });
 
@@ -81,17 +76,16 @@ export default function FormRenderer({ fields, onSubmit }: Props) {
     <form onSubmit={handleSubmit} className="space-y-6">
       {fields.map(field => (
         <div key={field.id}>
-          <label className="block font-medium mb-1">
+          <label className="font-medium block mb-1">
             {field.label}
-            {field.required && <span className="text-red-500">*</span>}
+            {field.required && <span className="text-red-500 ml-1">*</span>}
           </label>
 
           {field.type === "text" && (
             <input
-              type="text"
               className="w-full border p-2 rounded"
               value={formState[field.id] || ""}
-              onChange={e => handleChange(field.id, e.target.value)}
+              onChange={e => updateField(field.id, e.target.value)}
             />
           )}
 
@@ -103,7 +97,7 @@ export default function FormRenderer({ fields, onSubmit }: Props) {
                   name={field.id}
                   value={opt}
                   checked={formState[field.id] === opt}
-                  onChange={() => handleChange(field.id, opt)}
+                  onChange={() => updateField(field.id, opt)}
                   className="mr-2"
                 />
                 {opt}
@@ -116,7 +110,7 @@ export default function FormRenderer({ fields, onSubmit }: Props) {
                 <input
                   type="checkbox"
                   checked={(formState[field.id] || []).includes(opt)}
-                  onChange={() => handleCheckboxChange(field.id, opt)}
+                  onChange={() => toggleCheckbox(field.id, opt)}
                   className="mr-2"
                 />
                 {opt}
@@ -127,12 +121,12 @@ export default function FormRenderer({ fields, onSubmit }: Props) {
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map(n => (
                 <button
-                  key={n}
                   type="button"
-                  className={`px-3 py-1 rounded ${
-                    formState[field.id] === n ? "bg-yellow-400" : "bg-gray-200"
+                  key={n}
+                  className={`w-8 h-8 rounded-full ${
+                    formState[field.id] === n ? "bg-yellow-400" : "bg-gray-300"
                   }`}
-                  onClick={() => handleChange(field.id, n)}
+                  onClick={() => updateField(field.id, n)}
                 >
                   {n}
                 </button>
@@ -141,7 +135,7 @@ export default function FormRenderer({ fields, onSubmit }: Props) {
           )}
 
           {errors[field.id] && (
-            <p className="text-red-500 text-sm mt-1">{errors[field.id]}</p>
+            <p className="text-sm text-red-600 mt-1">{errors[field.id]}</p>
           )}
         </div>
       ))}
