@@ -20,6 +20,13 @@ A full-stack custom form builder application built with **Next.js 15**, **Django
 
 ### Installation
 
+#### MongoDB Connection Details
+
+- **Default URI**: `mongodb://localhost:27017/`
+- **Database Name**: `form_builder_db`
+- **Collections**: `forms`, `form_responses`
+- **Automatic Setup**: Database and collections are created automatically
+
 1. **Install MongoDB**:
 
    ```bash
@@ -45,7 +52,17 @@ A full-stack custom form builder application built with **Next.js 15**, **Django
    npm run dev
    ```
 
-4. **Access**: Frontend at http://localhost:3000, API at http://localhost:8000/api/
+4. **Configure Environment Variables**:
+   Create a `.env` file in the server directory:
+
+   ```env
+   MONGODB_URI=mongodb://localhost:27017/
+   MONGODB_DB_NAME=form_builder_db
+   SECRET_KEY=your-secret-key-here
+   DEBUG=True
+   ```
+
+5. **Access**: Frontend at http://localhost:3000, API at http://localhost:8000/api/
 
 ## ✨ Key Features
 
@@ -69,35 +86,6 @@ A full-stack custom form builder application built with **Next.js 15**, **Django
 - **MongoDB Storage**: Document-based data persistence
 - **Error Handling**: Graceful fallback to localStorage
 - **CORS Enabled**: Cross-origin resource sharing
-
-## 🚀 Quick Setup
-
-1. **Clone and Install**
-
-   ```bash
-   git clone <repository-url>
-   cd custom-form-builder
-   ```
-
-2. **Backend Setup**
-
-   ```bash
-   cd server
-   pip install -r requirements.txt
-   python manage.py runserver
-   ```
-
-3. **Frontend Setup**
-
-   ```bash
-   cd client
-   npm install
-   npm run dev
-   ```
-
-4. **Access Application**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8000/api/
 
 ## 🏗️ Project Structure
 
