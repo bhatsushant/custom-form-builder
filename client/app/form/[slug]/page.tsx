@@ -186,13 +186,19 @@ export default function FormPage() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <Navigation customTitle="Form Submitted" />
         <div className="flex items-center justify-center pt-20">
-          <div className="max-w-md mx-auto text-center bg-white p-8 rounded-lg shadow">
-            <div className="text-green-600 text-6xl mb-4">✓</div>
-            <h2 className="text-2xl font-bold mb-2">Thank You!</h2>
-            <p className="text-gray-600 mb-4">
+          <div className="max-w-md mx-auto text-center bg-white dark:bg-gray-800 p-8 rounded-lg shadow dark:shadow-gray-700 transition-colors duration-300">
+            <div className="text-green-600 dark:text-green-400 text-6xl mb-4">
+              ✓
+            </div>
+            <h2 className="text-2xl font-bold mb-2 text-gray-900 dark:text-gray-100">
+              Thank You!
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
               Your response has been submitted successfully.
             </p>
-            <p className="text-sm text-gray-500">Redirecting to dashboard...</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Redirecting to dashboard...
+            </p>
           </div>
         </div>
       </div>
@@ -200,33 +206,37 @@ export default function FormPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <Navigation
         customTitle={form.title}
         rightActions={
           <button
             onClick={() => router.push(`/dashboard/${form.slug}`)}
-            className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors"
+            className="px-4 py-2 bg-purple-600 dark:bg-purple-700 text-white rounded hover:bg-purple-700 dark:hover:bg-purple-600 transition-colors"
           >
             📊 View Analytics
           </button>
         }
       />
       <div className="py-8">
-        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow p-8">
+        <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700 p-8 transition-colors duration-300">
           <div className="mb-8">
             {form.description && (
-              <p className="text-gray-600">{form.description}</p>
+              <p className="text-gray-600 dark:text-gray-300">
+                {form.description}
+              </p>
             )}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {form.fields.map(field => (
               <div key={field.id} className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   {field.label}
                   {field.required && (
-                    <span className="text-red-500 ml-1">*</span>
+                    <span className="text-red-500 dark:text-red-400 ml-1">
+                      *
+                    </span>
                   )}
                 </label>
 
@@ -235,8 +245,10 @@ export default function FormPage() {
                     type="text"
                     value={responses[field.id] || ""}
                     onChange={e => handleFieldChange(field.id, e.target.value)}
-                    className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                      errors[field.id] ? "border-red-500" : "border-gray-300"
+                    className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-300 ${
+                      errors[field.id]
+                        ? "border-red-500 dark:border-red-400"
+                        : "border-gray-300 dark:border-gray-600"
                     }`}
                     placeholder={`Enter ${field.label.toLowerCase()}`}
                   />
@@ -247,7 +259,7 @@ export default function FormPage() {
                     {field.options?.map((option, index) => (
                       <label
                         key={index}
-                        className="flex items-center space-x-3"
+                        className="flex items-center space-x-3 cursor-pointer"
                       >
                         <input
                           type="radio"
@@ -257,9 +269,11 @@ export default function FormPage() {
                           onChange={e =>
                             handleFieldChange(field.id, e.target.value)
                           }
-                          className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                          className="w-4 h-4 text-blue-600 dark:text-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"
                         />
-                        <span className="text-gray-700">{option}</span>
+                        <span className="text-gray-700 dark:text-gray-300">
+                          {option}
+                        </span>
                       </label>
                     ))}
                   </div>
@@ -270,7 +284,7 @@ export default function FormPage() {
                     {field.options?.map((option, index) => (
                       <label
                         key={index}
-                        className="flex items-center space-x-3"
+                        className="flex items-center space-x-3 cursor-pointer"
                       >
                         <input
                           type="checkbox"
@@ -287,9 +301,11 @@ export default function FormPage() {
                                 );
                             handleFieldChange(field.id, newValue);
                           }}
-                          className="w-4 h-4 text-blue-600 focus:ring-blue-500 rounded"
+                          className="w-4 h-4 text-blue-600 dark:text-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400 rounded bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"
                         />
-                        <span className="text-gray-700">{option}</span>
+                        <span className="text-gray-700 dark:text-gray-300">
+                          {option}
+                        </span>
                       </label>
                     ))}
                   </div>
@@ -304,14 +320,14 @@ export default function FormPage() {
                         onClick={() => handleFieldChange(field.id, rating)}
                         className={`text-2xl ${
                           responses[field.id] >= rating
-                            ? "text-yellow-400"
-                            : "text-gray-300 hover:text-yellow-200"
+                            ? "text-yellow-400 dark:text-yellow-300"
+                            : "text-gray-300 dark:text-gray-600 hover:text-yellow-200 dark:hover:text-yellow-400"
                         } transition-colors`}
                       >
                         ⭐
                       </button>
                     ))}
-                    <span className="ml-2 text-sm text-gray-500">
+                    <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
                       {responses[field.id]
                         ? `${responses[field.id]}/5`
                         : "Click to rate"}
@@ -320,7 +336,9 @@ export default function FormPage() {
                 )}
 
                 {errors[field.id] && (
-                  <p className="text-red-500 text-sm">{errors[field.id]}</p>
+                  <p className="text-red-500 dark:text-red-400 text-sm">
+                    {errors[field.id]}
+                  </p>
                 )}
               </div>
             ))}
@@ -328,7 +346,7 @@ export default function FormPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 px-6 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full py-3 px-6 bg-blue-600 dark:bg-blue-700 text-white font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isSubmitting ? "Submitting..." : "Submit"}
             </button>

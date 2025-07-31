@@ -176,7 +176,7 @@ export default function FormBuilder() {
           <div className="grid grid-cols-12 gap-6">
             {/* Field Types Panel */}
             <div className="col-span-3 bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700 p-4 transition-colors duration-300">
-              <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+              <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
                 Field Types
               </h2>
               <div className="space-y-2">
@@ -184,7 +184,7 @@ export default function FormBuilder() {
                   <button
                     key={type}
                     onClick={() => addField(type as FormField["type"])}
-                    className="w-full p-3 text-left border border-gray-200 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 text-gray-900 dark:text-white transition-colors"
+                    className="w-full p-3 text-left border border-gray-200 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 text-gray-900 dark:text-gray-100 transition-colors"
                   >
                     <span>{icon}</span>
                     <span>{label}</span>
@@ -203,7 +203,7 @@ export default function FormBuilder() {
                   onChange={e =>
                     setFormData(prev => ({ ...prev, title: e.target.value }))
                   }
-                  className="w-full text-2xl font-bold border-none outline-none bg-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                  className="w-full text-2xl font-bold border-none outline-none bg-transparent text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-300"
                 />
                 <input
                   type="text"
@@ -215,7 +215,7 @@ export default function FormBuilder() {
                       slug: e.target.value.toLowerCase().replace(/\s+/g, "-")
                     }))
                   }
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-400"
+                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-transparent text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-400"
                 />
                 <textarea
                   placeholder="Form Description"
@@ -226,7 +226,7 @@ export default function FormBuilder() {
                       description: e.target.value
                     }))
                   }
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-400"
+                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-transparent text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-400"
                   rows={3}
                 />
               </div>
@@ -247,7 +247,7 @@ export default function FormBuilder() {
                   >
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex items-center gap-2">
-                        <div className="cursor-move text-gray-400 dark:text-gray-500">
+                        <div className="cursor-move text-gray-400 dark:text-gray-400">
                           ⋮⋮
                         </div>
                         <span className="text-sm text-gray-500 dark:text-gray-400">
@@ -289,7 +289,7 @@ export default function FormBuilder() {
               </div>
 
               {formData.fields.length === 0 && (
-                <div className="text-center py-12 text-gray-500">
+                <div className="text-center py-12 text-gray-500 dark:text-gray-300">
                   <p>
                     No fields added yet. Click on a field type to get started!
                   </p>
@@ -299,12 +299,12 @@ export default function FormBuilder() {
 
             {/* Properties Panel */}
             <div className="col-span-3 bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700 p-4 transition-colors duration-300">
-              <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+              <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
                 Form Properties
               </h2>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">
                     Fields: {formData.fields.length}
                   </label>
                 </div>

@@ -19,37 +19,36 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<Theme>("dark"); // Default to dark mode
   const [mounted, setMounted] = useState(false);
 
   // Load theme from localStorage on mount
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") as Theme;
-    const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-      .matches
-      ? "dark"
-      : "light";
 
-    setTheme(savedTheme || systemTheme);
+    // If no saved theme, default to dark mode instead of system preference
+    setTheme(savedTheme || "dark");
     setMounted(true);
   }, []);
 
   // Update document class and localStorage when theme changes
   useEffect(() => {
     if (mounted) {
-      document.documentElement.classList.remove("light", "dark");
-      document.documentElement.classList.add(theme);
+      const root = document.documentElement;
+      root.classList.remove("light", "dark");
+      root.classList.add(theme);
       localStorage.setItem("theme", theme);
     }
   }, [theme, mounted]);
 
   const toggleTheme = () => {
-    setTheme(prev => (prev === "light" ? "dark" : "light"));
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
   };
 
   // Prevent hydration mismatch
   if (!mounted) {
-    return <div className="min-h-screen bg-gray-100">{children}</div>;
+    return <div className="min-h-screen bg-gray-900">{children}</div>; // Default to dark
   }
 
   return (

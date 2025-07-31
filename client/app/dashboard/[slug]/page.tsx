@@ -55,15 +55,7 @@ export default function DashboardPage() {
   const { slug } = useParams();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
-
-  // Handle theme safely after mounting
-  let isDark = false;
-  try {
-    const themeContext = useTheme();
-    isDark = themeContext.isDark;
-  } catch (error) {
-    // Theme context not available yet during hydration
-  }
+  const { isDark } = useTheme();
   const [form, setForm] = useState<FormData | null>(null);
   const [responses, setResponses] = useState<Response[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -183,12 +175,14 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <Navigation customTitle="Loading Dashboard..." />
         <div className="flex items-center justify-center pt-20">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading dashboard...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-300">
+              Loading dashboard...
+            </p>
           </div>
         </div>
       </div>
@@ -197,7 +191,7 @@ export default function DashboardPage() {
 
   if (!form) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <Navigation customTitle="Dashboard Not Found" />
         <div className="flex items-center justify-center pt-20">
           <div className="text-center">
@@ -212,20 +206,20 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <Navigation
         customTitle={`${form.title} - Analytics`}
         rightActions={
           <div className="flex gap-4">
             <button
               onClick={() => router.push(`/form/${form.slug}`)}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+              className="px-4 py-2 bg-green-600 dark:bg-green-500 text-white rounded hover:bg-green-700 dark:hover:bg-green-600 transition-colors"
             >
               📝 Fill Form
             </button>
             <button
               onClick={() => router.push("/builder")}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
             >
               ➕ Create New Form
             </button>
@@ -234,51 +228,55 @@ export default function DashboardPage() {
       />
       <div className="max-w-7xl mx-auto p-6">
         <div className="mb-8">
-          <p className="text-gray-600">Real-time form analytics and insights</p>
+          <p className="text-gray-600 dark:text-gray-300">
+            Real-time form analytics and insights
+          </p>
         </div>
 
         {/* Summary Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700 p-6 transition-colors duration-300">
             <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
                 <span className="text-2xl">📊</span>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
                   Total Responses
                 </p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {responses.length}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700 p-6 transition-colors duration-300">
             <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
+              <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
                 <span className="text-2xl">📈</span>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Avg. Rating</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                  Avg. Rating
+                </p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {getAverageRating(form, responses)}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700 p-6 transition-colors duration-300">
             <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
+              <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
                 <span className="text-2xl">🕒</span>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
                   Latest Response
                 </p>
-                <p className="text-sm font-bold text-gray-900">
+                <p className="text-sm font-bold text-gray-900 dark:text-gray-100">
                   {responses.length > 0
                     ? new Date(
                         responses[responses.length - 1].timestamp
@@ -289,14 +287,16 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700 p-6 transition-colors duration-300">
             <div className="flex items-center">
-              <div className="p-2 bg-yellow-100 rounded-lg">
+              <div className="p-2 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
                 <span className="text-2xl">📝</span>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Form Fields</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                  Form Fields
+                </p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {form.fields.length}
                 </p>
               </div>
@@ -305,19 +305,40 @@ export default function DashboardPage() {
         </div>
 
         {/* Response Trends */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h2 className="text-xl font-bold mb-4">Response Trends</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700 p-6 mb-8 transition-colors duration-300">
+          <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">
+            Response Trends
+          </h2>
           <div className="h-64">
             <Line
-              data={getResponseTrendsData(responses)}
+              data={getResponseTrendsData(responses, isDark)}
               options={{
                 responsive: true,
                 maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    labels: {
+                      color: isDark ? "#e5e7eb" : "#374151"
+                    }
+                  }
+                },
                 scales: {
+                  x: {
+                    ticks: {
+                      color: isDark ? "#9ca3af" : "#6b7280"
+                    },
+                    grid: {
+                      color: isDark ? "#374151" : "#e5e7eb"
+                    }
+                  },
                   y: {
                     beginAtZero: true,
                     ticks: {
-                      stepSize: 1
+                      stepSize: 1,
+                      color: isDark ? "#9ca3af" : "#6b7280"
+                    },
+                    grid: {
+                      color: isDark ? "#374151" : "#e5e7eb"
                     }
                   }
                 }
@@ -329,14 +350,21 @@ export default function DashboardPage() {
         {/* Field Analytics */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {form.fields.map(field => (
-            <FieldChart key={field.id} field={field} responses={responses} />
+            <FieldChart
+              key={field.id}
+              field={field}
+              responses={responses}
+              isDark={isDark}
+            />
           ))}
         </div>
 
         {/* Recent Responses */}
-        <div className="mt-8 bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-bold">Recent Responses</h2>
+        <div className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700 transition-colors duration-300">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+              Recent Responses
+            </h2>
           </div>
           <div className="p-6">
             <div className="space-y-4 max-h-96 overflow-y-auto">
@@ -346,21 +374,23 @@ export default function DashboardPage() {
                 .map(response => (
                   <div
                     key={response.id}
-                    className="border rounded-lg p-4 bg-gray-50"
+                    className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700 transition-colors duration-300"
                   >
                     <div className="flex justify-between items-start mb-2">
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
                         Response #{response.id}
                       </span>
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
                         {new Date(response.timestamp).toLocaleString()}
                       </span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                       {form.fields.map(field => (
                         <div key={field.id}>
-                          <span className="font-medium">{field.label}: </span>
-                          <span className="text-gray-700">
+                          <span className="font-medium text-gray-800 dark:text-gray-200">
+                            {field.label}:{" "}
+                          </span>
+                          <span className="text-gray-700 dark:text-gray-300">
                             {Array.isArray(response.data[field.id])
                               ? response.data[field.id].join(", ")
                               : response.data[field.id] || "No response"}
@@ -380,26 +410,35 @@ export default function DashboardPage() {
 
 function FieldChart({
   field,
-  responses
+  responses,
+  isDark
 }: {
   field: FormField;
   responses: Response[];
+  isDark?: boolean;
 }) {
   const fieldData = responses.map(r => r.data[field.id]).filter(Boolean);
 
   if (field.type === "text") {
     const recentResponses = fieldData.slice(-5);
     return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold mb-4">{field.label}</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700 p-6 transition-colors duration-300">
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+          {field.label}
+        </h3>
         <div className="space-y-2">
           {recentResponses.map((text, i) => (
-            <div key={i} className="p-2 bg-gray-100 rounded text-sm">
+            <div
+              key={i}
+              className="p-2 bg-gray-100 dark:bg-gray-700 rounded text-sm text-gray-800 dark:text-gray-200"
+            >
               "{text}"
             </div>
           ))}
           {recentResponses.length === 0 && (
-            <p className="text-gray-500 text-sm">No responses yet</p>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">
+              No responses yet
+            </p>
           )}
         </div>
       </div>
@@ -420,11 +459,15 @@ function FieldChart({
     );
 
     return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold mb-2">{field.label}</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700 p-6 transition-colors duration-300">
+        <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
+          {field.label}
+        </h3>
         <div className="text-center mb-4">
           <div className="text-3xl font-bold text-yellow-500">⭐ {avg}</div>
-          <p className="text-sm text-gray-600">{fieldData.length} ratings</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            {fieldData.length} ratings
+          </p>
         </div>
         <div className="h-48">
           <Bar
@@ -447,10 +490,31 @@ function FieldChart({
             options={{
               responsive: true,
               maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  labels: {
+                    color: isDark ? "#e5e7eb" : "#374151"
+                  }
+                }
+              },
               scales: {
+                x: {
+                  ticks: {
+                    color: isDark ? "#9ca3af" : "#6b7280"
+                  },
+                  grid: {
+                    color: isDark ? "#374151" : "#e5e7eb"
+                  }
+                },
                 y: {
                   beginAtZero: true,
-                  ticks: { stepSize: 1 }
+                  ticks: {
+                    stepSize: 1,
+                    color: isDark ? "#9ca3af" : "#6b7280"
+                  },
+                  grid: {
+                    color: isDark ? "#374151" : "#e5e7eb"
+                  }
                 }
               }
             }}
@@ -469,8 +533,10 @@ function FieldChart({
       }, {}) || {};
 
     return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold mb-4">{field.label}</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700 p-6 transition-colors duration-300">
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+          {field.label}
+        </h3>
         <div className="h-48">
           <Pie
             data={{
@@ -493,7 +559,14 @@ function FieldChart({
             }}
             options={{
               responsive: true,
-              maintainAspectRatio: false
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  labels: {
+                    color: isDark ? "#e5e7eb" : "#374151"
+                  }
+                }
+              }
             }}
           />
         </div>
@@ -509,8 +582,10 @@ function FieldChart({
       }, {}) || {};
 
     return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold mb-4">{field.label}</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700 p-6 transition-colors duration-300">
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+          {field.label}
+        </h3>
         <div className="h-48">
           <Bar
             data={{
@@ -519,17 +594,38 @@ function FieldChart({
                 {
                   label: "Responses",
                   data: Object.values(counts),
-                  backgroundColor: "#3b82f6"
+                  backgroundColor: isDark ? "#60a5fa" : "#3b82f6"
                 }
               ]
             }}
             options={{
               responsive: true,
               maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  labels: {
+                    color: isDark ? "#e5e7eb" : "#374151"
+                  }
+                }
+              },
               scales: {
+                x: {
+                  ticks: {
+                    color: isDark ? "#9ca3af" : "#6b7280"
+                  },
+                  grid: {
+                    color: isDark ? "#374151" : "#e5e7eb"
+                  }
+                },
                 y: {
                   beginAtZero: true,
-                  ticks: { stepSize: 1 }
+                  ticks: {
+                    stepSize: 1,
+                    color: isDark ? "#9ca3af" : "#6b7280"
+                  },
+                  grid: {
+                    color: isDark ? "#374151" : "#e5e7eb"
+                  }
                 }
               }
             }}
@@ -560,7 +656,7 @@ function getAverageRating(form: FormData, responses: Response[]): string {
   return totalCount > 0 ? (totalRating / totalCount).toFixed(1) : "N/A";
 }
 
-function getResponseTrendsData(responses: Response[]) {
+function getResponseTrendsData(responses: Response[], isDark?: boolean) {
   const last7Days = Array.from({ length: 7 }, (_, i) => {
     const date = new Date();
     date.setDate(date.getDate() - (6 - i));
@@ -579,8 +675,10 @@ function getResponseTrendsData(responses: Response[]) {
       {
         label: "Responses",
         data: responseCounts,
-        borderColor: "#3b82f6",
-        backgroundColor: "rgba(59, 130, 246, 0.1)",
+        borderColor: isDark ? "#60a5fa" : "#3b82f6",
+        backgroundColor: isDark
+          ? "rgba(96, 165, 250, 0.1)"
+          : "rgba(59, 130, 246, 0.1)",
         tension: 0.1,
         fill: true
       }
