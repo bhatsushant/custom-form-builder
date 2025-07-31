@@ -5,6 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import { Bar, Pie, Line } from "react-chartjs-2";
 import Navigation from "../../components/Navigation";
 import { useTheme } from "../../context/ThemeContext";
+import { useFormContext } from "../../context/FormContext";
+import { api } from "../../utils/api";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -39,10 +41,13 @@ interface FormField {
 }
 
 interface FormData {
+  id?: number;
   title: string;
   description: string;
   fields: FormField[];
   slug: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface Response {
@@ -56,59 +61,108 @@ export default function DashboardPage() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const { isDark } = useTheme();
+  const { getForm } = useFormContext();
   const [form, setForm] = useState<FormData | null>(null);
   const [responses, setResponses] = useState<Response[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Mock real-time updates
+  // Load form and responses from API
   useEffect(() => {
     if (!slug) return;
 
-    // Load form and responses
-    const loadData = () => {
-      const forms = JSON.parse(localStorage.getItem("forms") || "{}");
-      const formData = forms[slug as string];
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
 
-      if (formData) {
-        setForm(formData);
+        // Get form from context (which loads from API)
+        const formData = getForm(slug as string);
 
-        const allResponses = JSON.parse(
-          localStorage.getItem("responses") || "{}"
-        );
-        const formResponses = allResponses[slug as string] || [];
+        if (formData) {
+          setForm(formData);
 
-        // Add some mock data if no responses exist
-        if (formResponses.length === 0) {
-          const mockResponses = generateMockResponses(formData);
-          setResponses(mockResponses);
+          // Load responses from API if form has an ID
+          if (formData.id) {
+            try {
+              const responseData = await api.get(
+                `/forms/${formData.id}/get_responses/`
+              );
+
+              // Convert API response to our format
+              const formattedResponses = responseData.map((response: any) => ({
+                id: response.id,
+                timestamp: response.submitted_at,
+                data: response.responses
+              }));
+
+              setResponses(formattedResponses);
+            } catch (apiError) {
+              console.error("Failed to load responses from API:", apiError);
+              // Fallback to localStorage
+              loadLocalResponses(slug as string);
+            }
+          } else {
+            // Fallback to localStorage if no form ID
+            loadLocalResponses(slug as string);
+          }
         } else {
-          setResponses(formResponses);
+          // If form not found in context, try localStorage
+          loadLocalData(slug as string);
         }
+      } catch (err) {
+        console.error("Failed to load data:", err);
+        setError("Failed to load form data");
+        // Fallback to localStorage
+        loadLocalData(slug as string);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
     loadData();
+  }, [slug, getForm]);
 
-    // Simulate real-time updates every 5 seconds
+  const loadLocalResponses = (formSlug: string) => {
+    const allResponses = JSON.parse(localStorage.getItem("responses") || "{}");
+    const formResponses = allResponses[formSlug] || [];
+
+    if (formResponses.length === 0 && form) {
+      const mockResponses = generateMockResponses(form);
+      setResponses(mockResponses);
+    } else {
+      setResponses(formResponses);
+    }
+  };
+
+  const loadLocalData = (formSlug: string) => {
+    const forms = JSON.parse(localStorage.getItem("forms") || "{}");
+    const formData = forms[formSlug];
+
+    if (formData) {
+      setForm(formData);
+      loadLocalResponses(formSlug);
+    }
+  };
+
+  // Mock real-time updates every 5 seconds for demo purposes
+  useEffect(() => {
+    if (!form || !mounted) return;
+
     const interval = setInterval(() => {
-      if (Math.random() > 0.7) {
-        // 30% chance of new response
-        const forms = JSON.parse(localStorage.getItem("forms") || "{}");
-        const formData = forms[slug as string];
-        if (formData) {
-          const newResponse = generateRandomResponse(formData);
-          setResponses(prev => [...prev, newResponse]);
-        }
+      if (Math.random() > 0.8) {
+        // 20% chance of new response for demo
+        const newResponse = generateRandomResponse(form);
+        setResponses(prev => [...prev, newResponse]);
       }
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [slug]);
+  }, [form, mounted]);
 
   const generateMockResponses = (formData: FormData): Response[] => {
     const mockResponses: Response[] = [];

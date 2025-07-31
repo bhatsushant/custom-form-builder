@@ -28,37 +28,36 @@ class FormViewSet(viewsets.ModelViewSet):
         
         # Create response
         response_data = {
-            'form_id': form.id,
+            'form': form,
             'responses': request.data.get('responses', {}),
             'ip_address': self.get_client_ip(request)
         }
         
-        serializer = FormResponseSerializer(data=response_data)
-        if serializer.is_valid():
-            response_obj = serializer.save()
-            
-            # Send real-time notification
-            channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(
-                'analytics',
-                {
-                    'type': 'new_response',
-                    'message': {
-                        'form_id': form.id,
-                        'form_title': form.title,
-                        'response_id': str(response_obj.id),
-                        'submitted_at': response_obj.submitted_at.isoformat()
-                    }
-                }
-            )
-            
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # Create the response object directly
+        response_obj = FormResponse.objects.create(**response_data)
         
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # Send real-time notification
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            'analytics',
+            {
+                'type': 'new_response',
+                'message': {
+                    'form_id': form.id,
+                    'form_title': form.title,
+                    'response_id': str(response_obj.id),
+                    'submitted_at': response_obj.submitted_at.isoformat()
+                }
+            }
+        )
+        
+        # Serialize and return the response
+        serializer = FormResponseSerializer(response_obj)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
     
     @action(detail=True, methods=['get'])
     def get_responses(self, request, pk=None):
         form = get_object_or_404(Form, pk=pk)
-        responses = FormResponse.objects.filter(form_id=form.id).order_by('-submitted_at')
+        responses = FormResponse.objects.filter(form=form).order_by('-submitted_at')
         serializer = FormResponseSerializer(responses, many=True)
         return Response(serializer.data)

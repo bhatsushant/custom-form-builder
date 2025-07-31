@@ -28,15 +28,11 @@ class AnalyticsView(APIView):
         
         # Recent responses
         recent_responses = []
-        for response in FormResponse.objects.order_by('-submitted_at')[:20]:
-            try:
-                form = Form.objects.get(id=response.form_id)
-                recent_responses.append({
-                    'formTitle': form.title,
-                    'submittedAt': response.submitted_at.isoformat()
-                })
-            except Form.DoesNotExist:
-                continue
+        for response in FormResponse.objects.select_related('form').order_by('-submitted_at')[:20]:
+            recent_responses.append({
+                'formTitle': response.form.title,
+                'submittedAt': response.submitted_at.isoformat()
+            })
         
         return Response({
             'totalForms': total_forms,
@@ -52,7 +48,7 @@ class AnalyticsView(APIView):
         except Form.DoesNotExist:
             return Response({'error': 'Form not found'}, status=404)
         
-        responses = FormResponse.objects.filter(form_id=form_id)
+        responses = FormResponse.objects.filter(form=form)
         total_responses = responses.count()
         
         # Field analytics
@@ -68,7 +64,7 @@ class AnalyticsView(APIView):
                 'fieldType': field['type'],
                 'responses': field_responses
             })
-        
+
         recent_responses = [{
             'formTitle': form.title,
             'submittedAt': response.submitted_at.isoformat()

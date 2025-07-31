@@ -36,7 +36,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'backend.urls'
+ROOT_URLCONF = 'urls'
 
 TEMPLATES = [
     {
@@ -54,17 +54,14 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'backend.wsgi.application'
-ASGI_APPLICATION = 'backend.asgi.application'
+WSGI_APPLICATION = 'asgi.application'
+ASGI_APPLICATION = 'asgi.application'
 
 # Database
 DATABASES = {
     'default': {
-        'ENGINE': 'djongo',
-        'NAME': 'form_builder',
-        'CLIENT': {
-            'host': os.getenv('MONGODB_URI', 'mongodb://localhost:27017'),
-        }
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -92,6 +89,8 @@ REST_FRAMEWORK = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "http://localhost:4000",
+    "http://127.0.0.1:4000",
 ]
 
 CORS_ALLOW_ALL_ORIGINS = DEBUG

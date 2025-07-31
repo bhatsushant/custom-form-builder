@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Navigation from "../../components/Navigation";
 import { useTheme } from "../../context/ThemeContext";
+import { useFormContext } from "../../context/FormContext";
+import { api } from "../../utils/api";
 
 interface FormField {
   id: string;
@@ -19,10 +21,13 @@ interface FormField {
 }
 
 interface FormData {
+  id?: number;
   title: string;
   description: string;
   fields: FormField[];
   slug: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface FormResponse {
@@ -33,15 +38,8 @@ export default function FormPage() {
   const { slug } = useParams();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
-
-  // Handle theme safely after mounting
-  let isDark = false;
-  try {
-    const themeContext = useTheme();
-    isDark = themeContext.isDark;
-  } catch (error) {
-    // Theme context not available yet during hydration
-  }
+  const { isDark } = useTheme();
+  const { getForm } = useFormContext();
   const [form, setForm] = useState<FormData | null>(null);
   const [responses, setResponses] = useState<FormResponse>({});
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -55,21 +53,12 @@ export default function FormPage() {
   useEffect(() => {
     if (!slug) return;
 
-    // Load form from localStorage (in real app, load from backend)
-    const forms = JSON.parse(localStorage.getItem("forms") || "{}");
-    const formData = forms[slug as string];
-
+    // Load form from FormContext (which now loads from API)
+    const formData = getForm(slug as string);
     if (formData) {
       setForm(formData);
-    } else {
-      // If not found, try loading from drafts
-      const drafts = JSON.parse(localStorage.getItem("drafts") || "{}");
-      const draftData = drafts[slug as string];
-      if (draftData) {
-        setForm(draftData);
-      }
     }
-  }, [slug]);
+  }, [slug, getForm]);
 
   const validateField = (field: FormField, value: any): string | null => {
     if (
@@ -137,31 +126,75 @@ export default function FormPage() {
       return;
     }
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      // Submit response to backend API
+      if (form.id) {
+        await api.post(`/forms/${form.id}/responses/`, {
+          responses: responses
+        });
+      } else {
+        // Fallback to localStorage if form doesn't have an ID
+        const existingResponses = JSON.parse(
+          localStorage.getItem("responses") || "{}"
+        );
+        if (!existingResponses[form.slug]) {
+          existingResponses[form.slug] = [];
+        }
+        existingResponses[form.slug].push({
+          id: Date.now(),
+          timestamp: new Date().toISOString(),
+          data: responses
+        });
+        localStorage.setItem("responses", JSON.stringify(existingResponses));
+      }
 
-    // Save response to localStorage (in real app, send to backend)
-    const existingResponses = JSON.parse(
-      localStorage.getItem("responses") || "{}"
-    );
-    if (!existingResponses[form.slug]) {
-      existingResponses[form.slug] = [];
+      setIsSubmitting(false);
+      setSubmitted(true);
+
+      // Redirect to dashboard after a short delay
+      setTimeout(() => {
+        router.push(`/dashboard/${form.slug}`);
+      }, 2000);
+    } catch (error) {
+      console.error("Failed to submit form:", error);
+      setIsSubmitting(false);
+
+      // Fallback to localStorage on error
+      const existingResponses = JSON.parse(
+        localStorage.getItem("responses") || "{}"
+      );
+      if (!existingResponses[form.slug]) {
+        existingResponses[form.slug] = [];
+      }
+      existingResponses[form.slug].push({
+        id: Date.now(),
+        timestamp: new Date().toISOString(),
+        data: responses
+      });
+      localStorage.setItem("responses", JSON.stringify(existingResponses));
+
+      // Still show success since we saved locally
+      setSubmitted(true);
+      setTimeout(() => {
+        router.push(`/dashboard/${form.slug}`);
+      }, 2000);
     }
-    existingResponses[form.slug].push({
-      id: Date.now(),
-      timestamp: new Date().toISOString(),
-      data: responses
-    });
-    localStorage.setItem("responses", JSON.stringify(existingResponses));
-
-    setIsSubmitting(false);
-    setSubmitted(true);
-
-    // Redirect to dashboard after a short delay
-    setTimeout(() => {
-      router.push(`/dashboard/${form.slug}`);
-    }, 2000);
   };
+
+  // Prevent hydration mismatch
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+        <Navigation customTitle="Loading Form..." />
+        <div className="flex items-center justify-center pt-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-300">Loading form...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!form) {
     return (

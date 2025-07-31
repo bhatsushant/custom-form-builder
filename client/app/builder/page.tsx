@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Navigation from "../components/Navigation";
 import { useTheme } from "../context/ThemeContext";
+import { useFormContext } from "../context/FormContext";
 
 interface FormField {
   id: string;
@@ -19,24 +20,20 @@ interface FormField {
 }
 
 interface FormData {
+  id?: number;
   title: string;
   description: string;
   fields: FormField[];
   slug: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export default function FormBuilder() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
-
-  // Handle theme safely after mounting
-  let isDark = false;
-  try {
-    const themeContext = useTheme();
-    isDark = themeContext.isDark;
-  } catch (error) {
-    // Theme context not available yet during hydration
-  }
+  const { isDark } = useTheme();
+  const { saveForm: saveFormToAPI, loading, error } = useFormContext();
   const [formData, setFormData] = useState<FormData>({
     title: "",
     description: "",
@@ -120,19 +117,20 @@ export default function FormBuilder() {
     setDraggedIndex(null);
   };
 
-  const saveForm = () => {
+  const saveForm = async () => {
     if (!formData.title || !formData.slug) {
       alert("Please fill in the title and slug");
       return;
     }
 
-    // Save to localStorage for now (in real app, save to backend)
-    const forms = JSON.parse(localStorage.getItem("forms") || "{}");
-    forms[formData.slug] = formData;
-    localStorage.setItem("forms", JSON.stringify(forms));
-
-    alert("Form saved successfully!");
-    router.push(`/form/${formData.slug}`);
+    try {
+      await saveFormToAPI(formData.slug, formData);
+      alert("Form saved successfully!");
+      router.push(`/form/${formData.slug}`);
+    } catch (err) {
+      console.error("Failed to save form:", err);
+      alert("Failed to save form. Please try again.");
+    }
   };
 
   const saveDraft = () => {
@@ -141,6 +139,23 @@ export default function FormBuilder() {
     localStorage.setItem("drafts", JSON.stringify(drafts));
     alert("Draft saved!");
   };
+
+  // Prevent hydration mismatch
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+        <Navigation customTitle="Form Builder" />
+        <div className="flex items-center justify-center pt-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-300">
+              Loading form builder...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
@@ -162,9 +177,10 @@ export default function FormBuilder() {
             </button>
             <button
               onClick={saveForm}
-              className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
+              disabled={loading}
+              className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Save Form
+              {loading ? "Saving..." : "Save Form"}
             </button>
           </div>
         }

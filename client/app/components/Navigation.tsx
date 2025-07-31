@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "../context/ThemeContext";
+import { useState, useEffect } from "react";
 
 interface NavigationProps {
   showBackToHome?: boolean;
@@ -17,7 +18,12 @@ export default function Navigation({
 }: NavigationProps) {
   const pathname = usePathname();
   const isHomePage = pathname === "/";
+  const [mounted, setMounted] = useState(false);
   const { theme, toggleTheme, isDark } = useTheme();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (isHomePage && !customTitle) {
     return null; // Don't show navigation on home page unless custom title is provided
