@@ -171,7 +171,7 @@ export default function FormBuilder() {
       />
       <div className="max-w-7xl mx-auto p-6">
         {showPreview ? (
-          <FormPreview formData={formData} />
+          <FormPreview formData={formData} isDark={isDark} />
         ) : (
           <div className="grid grid-cols-12 gap-6">
             {/* Field Types Panel */}
@@ -243,7 +243,7 @@ export default function FormBuilder() {
                       editingField === field.id
                         ? "border-blue-500 dark:border-blue-400"
                         : "border-gray-200 dark:border-gray-600"
-                    } hover:shadow-md dark:hover:shadow-gray-700 transition-all duration-300 bg-gray-50 dark:bg-gray-750`}
+                    } hover:shadow-md dark:hover:shadow-gray-700 transition-all duration-300 bg-gray-50 dark:bg-gray-700`}
                   >
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex items-center gap-2">
@@ -280,9 +280,10 @@ export default function FormBuilder() {
                         field={field}
                         onUpdate={updates => updateField(field.id, updates)}
                         onClose={() => setEditingField(null)}
+                        isDark={isDark}
                       />
                     ) : (
-                      <FieldDisplay field={field} />
+                      <FieldDisplay field={field} isDark={isDark} />
                     )}
                   </div>
                 ))}
@@ -326,11 +327,13 @@ export default function FormBuilder() {
 function FieldEditor({
   field,
   onUpdate,
-  onClose
+  onClose,
+  isDark
 }: {
   field: FormField;
   onUpdate: (updates: Partial<FormField>) => void;
   onClose: () => void;
+  isDark?: boolean;
 }) {
   const [localField, setLocalField] = useState(field);
 
@@ -371,14 +374,16 @@ function FieldEditor({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium mb-1">Label</label>
+        <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+          Label
+        </label>
         <input
           type="text"
           value={localField.label}
           onChange={e =>
             setLocalField(prev => ({ ...prev, label: e.target.value }))
           }
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-300"
         />
       </div>
 
@@ -389,14 +394,19 @@ function FieldEditor({
           onChange={e =>
             setLocalField(prev => ({ ...prev, required: e.target.checked }))
           }
+          className="text-blue-600 dark:text-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded"
         />
-        <label className="text-sm">Required field</label>
+        <label className="text-sm text-gray-700 dark:text-gray-300">
+          Required field
+        </label>
       </div>
 
       {(localField.type === "multiple-choice" ||
         localField.type === "checkbox") && (
         <div>
-          <label className="block text-sm font-medium mb-2">Options</label>
+          <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+            Options
+          </label>
           <div className="space-y-2">
             {localField.options?.map((option, index) => (
               <div key={index} className="flex gap-2">
@@ -404,11 +414,11 @@ function FieldEditor({
                   type="text"
                   value={option}
                   onChange={e => updateOption(index, e.target.value)}
-                  className="flex-1 p-2 border rounded"
+                  className="flex-1 p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-300"
                 />
                 <button
                   onClick={() => removeOption(index)}
-                  className="px-2 py-1 text-red-600 hover:text-red-800"
+                  className="px-2 py-1 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
                 >
                   ✕
                 </button>
@@ -416,7 +426,7 @@ function FieldEditor({
             ))}
             <button
               onClick={addOption}
-              className="w-full p-2 border border-dashed rounded text-gray-500 hover:text-gray-700"
+              className="w-full p-2 border border-dashed border-gray-300 dark:border-gray-600 rounded text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 bg-transparent transition-colors duration-300"
             >
               + Add Option
             </button>
@@ -427,7 +437,9 @@ function FieldEditor({
       {localField.type === "text" && (
         <div className="space-y-2">
           <div>
-            <label className="block text-sm font-medium mb-1">Min Length</label>
+            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+              Min Length
+            </label>
             <input
               type="number"
               value={localField.validation?.minLength || ""}
@@ -440,11 +452,13 @@ function FieldEditor({
                   }
                 }))
               }
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-300"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Max Length</label>
+            <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+              Max Length
+            </label>
             <input
               type="number"
               value={localField.validation?.maxLength || ""}
@@ -457,7 +471,7 @@ function FieldEditor({
                   }
                 }))
               }
-              className="w-full p-2 border rounded"
+              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-300"
             />
           </div>
         </div>
@@ -466,13 +480,13 @@ function FieldEditor({
       <div className="flex gap-2">
         <button
           onClick={handleSave}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          className="px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-300"
         >
           Save
         </button>
         <button
           onClick={onClose}
-          className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+          className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors duration-300"
         >
           Cancel
         </button>
@@ -481,27 +495,40 @@ function FieldEditor({
   );
 }
 
-function FieldDisplay({ field }: { field: FormField }) {
+function FieldDisplay({
+  field,
+  isDark
+}: {
+  field: FormField;
+  isDark?: boolean;
+}) {
   return (
     <div>
-      <label className="block font-medium mb-2">
+      <label className="block font-medium mb-2 text-gray-900 dark:text-gray-100">
         {field.label}{" "}
-        {field.required && <span className="text-red-500">*</span>}
+        {field.required && (
+          <span className="text-red-500 dark:text-red-400">*</span>
+        )}
       </label>
       {field.type === "text" && (
         <input
           type="text"
           disabled
           placeholder="Text input preview"
-          className="w-full p-2 border rounded bg-gray-50"
+          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
         />
       )}
       {field.type === "multiple-choice" && (
         <div className="space-y-2">
           {field.options?.map((option, index) => (
             <label key={index} className="flex items-center gap-2">
-              <input type="radio" name={field.id} disabled />
-              <span>{option}</span>
+              <input
+                type="radio"
+                name={field.id}
+                disabled
+                className="text-blue-600 dark:text-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"
+              />
+              <span className="text-gray-700 dark:text-gray-300">{option}</span>
             </label>
           ))}
         </div>
@@ -510,8 +537,12 @@ function FieldDisplay({ field }: { field: FormField }) {
         <div className="space-y-2">
           {field.options?.map((option, index) => (
             <label key={index} className="flex items-center gap-2">
-              <input type="checkbox" disabled />
-              <span>{option}</span>
+              <input
+                type="checkbox"
+                disabled
+                className="text-blue-600 dark:text-blue-400 focus:ring-blue-500 dark:focus:ring-blue-400 rounded bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600"
+              />
+              <span className="text-gray-700 dark:text-gray-300">{option}</span>
             </label>
           ))}
         </div>
@@ -519,7 +550,10 @@ function FieldDisplay({ field }: { field: FormField }) {
       {field.type === "rating" && (
         <div className="flex gap-1">
           {[1, 2, 3, 4, 5].map(star => (
-            <span key={star} className="text-gray-300 text-xl">
+            <span
+              key={star}
+              className="text-gray-300 dark:text-gray-600 text-xl"
+            >
               ⭐
             </span>
           ))}
@@ -529,29 +563,39 @@ function FieldDisplay({ field }: { field: FormField }) {
   );
 }
 
-function FormPreview({ formData }: { formData: FormData }) {
+function FormPreview({
+  formData,
+  isDark
+}: {
+  formData: FormData;
+  isDark?: boolean;
+}) {
   return (
-    <div className="max-w-2xl mx-auto bg-white rounded-lg shadow p-8">
-      <h1 className="text-3xl font-bold mb-2">
+    <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-700 p-8 transition-colors duration-300">
+      <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-gray-100">
         {formData.title || "Untitled Form"}
       </h1>
       {formData.description && (
-        <p className="text-gray-600 mb-6">{formData.description}</p>
+        <p className="text-gray-600 dark:text-gray-300 mb-6">
+          {formData.description}
+        </p>
       )}
 
       <div className="space-y-6">
         {formData.fields.map(field => (
-          <FieldDisplay key={field.id} field={field} />
+          <FieldDisplay key={field.id} field={field} isDark={isDark} />
         ))}
       </div>
 
       {formData.fields.length === 0 && (
-        <p className="text-gray-500 text-center py-8">No fields added yet</p>
+        <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+          No fields added yet
+        </p>
       )}
 
       <button
         disabled
-        className="w-full mt-8 p-3 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+        className="w-full mt-8 p-3 bg-blue-600 dark:bg-blue-700 text-white rounded hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-50 transition-colors duration-300"
       >
         Submit (Preview Mode)
       </button>
