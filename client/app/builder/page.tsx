@@ -219,7 +219,7 @@ export default function FormBuilder() {
                   onChange={e =>
                     setFormData(prev => ({ ...prev, title: e.target.value }))
                   }
-                  className="w-full text-2xl font-bold border-none outline-none bg-transparent text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-300"
+                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded bg-transparent text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-400"
                 />
                 <input
                   type="text"

@@ -39,6 +39,14 @@ A full-stack custom form builder application built with **Next.js 15**, **Django
 2. **Backend Setup**:
 
    ```bash
+   # create a virtual environment
+   python -m venv .venv
+   source .venv/Scripts/activate   # On Windows
+   # or
+   source .venv/bin/activate       # On macOS/Linux
+   ```
+
+   ```bash
    cd server
    pip install -r requirements.txt
    python manage.py runserver 8000
